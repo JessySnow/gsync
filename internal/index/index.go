@@ -4,13 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/collinglass/bptree"
-	"gync/client/github"
-	config2 "gync/config"
+	"gync/internal/client/github"
+	config2 "gync/internal/config"
 	"hash/fnv"
 	"time"
 )
 
-var indexRoot = bptree.NewTree()
+var indexRoot *bptree.Tree
+
+// init bp tree from root dir
+func init() {
+	indexRoot = bptree.NewTree()
+}
 
 func GetRelease(repo config2.Repo, release github.Release) (node *DirNode, err error) {
 	key, err := GenerateReleaseKey(repo, release)

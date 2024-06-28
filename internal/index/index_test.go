@@ -1,8 +1,8 @@
 package index
 
 import (
-	"gync/client/github"
-	config2 "gync/config"
+	"gync/internal/client/github"
+	config2 "gync/internal/config"
 	"reflect"
 	"testing"
 )
