@@ -9,6 +9,6 @@ type Config struct {
 }
 
 type Repo struct {
-	Owner    string `json:"owner"`
-	RepoName string `json:"repoName"`
+	Owner string `json:"owner"`
+	Name  string `json:"repoName"`
 }
