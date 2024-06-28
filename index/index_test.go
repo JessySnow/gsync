@@ -95,3 +95,31 @@ func TestAddRelease(t *testing.T) {
 		})
 	}
 }
+
+func TestGetRelease(t *testing.T) {
+	type args struct {
+		repo    config2.Repo
+		release github.Release
+	}
+	tests := []struct {
+		name     string
+		args     args
+		wantNode *DirNode
+		wantErr  bool
+	}{
+		{args: args{repo: repo1, release: release1}, wantNode: &node1},
+	}
+	_, _ = AddRelease(repo1, release1)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotNode, err := GetRelease(tt.args.repo, tt.args.release)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetRelease() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotNode, tt.wantNode) {
+				t.Errorf("GetRelease() gotNode = %v, want %v", gotNode, tt.wantNode)
+			}
+		})
+	}
+}

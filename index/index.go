@@ -23,6 +23,7 @@ func GetRelease(repo config2.Repo, release github.Release) (node *DirNode, err e
 	if err != nil {
 		return nil, fmt.Errorf("find release key record in bptree failed: %v", err)
 	}
+	node = new(DirNode)
 	err = json.Unmarshal(record.Value, node)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal prtree record'value to release failed")
