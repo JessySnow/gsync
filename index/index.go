@@ -11,7 +11,6 @@ import (
 )
 
 var indexRoot = bptree.NewTree()
-var config config2.Config
 
 func GetRelease(repo config2.Repo, release github.Release) (node *DirNode, err error) {
 	key, err := GenerateReleaseKey(repo, release)
@@ -56,6 +55,25 @@ func AddRelease(repo config2.Repo, release github.Release) (newNode *DirNode, er
 		return nil, fmt.Errorf("insert release node to bptree failed: %v", err)
 	}
 
+	return
+}
+
+func UpdateRelease(repo config2.Repo, release github.Release, newNode *DirNode) (err error) {
+	key, err := GenerateReleaseKey(repo, release)
+	if err != nil {
+		return fmt.Errorf("generate release key failed: %v", err)
+	}
+
+	origin, err := indexRoot.Find(key, false)
+	if err != nil {
+		return fmt.Errorf("find release in bptree failed: %v", err)
+	}
+
+	newValue, err := json.Marshal(*newNode)
+	if err != nil {
+		return fmt.Errorf("marshal dirNode failed: %v", err)
+	}
+	origin.Value = newValue
 	return
 }
 

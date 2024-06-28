@@ -12,6 +12,7 @@ var release1 = github.Release{Name: "R1", Time: "2022-06-05T12:37:28Z"}
 var repo2 = config2.Repo{Owner: "A", Name: "B"}
 var release2 = github.Release{Name: "R1", Time: "2022-06-05T12:37:29Z"}
 var node1 = DirNode{DirName: "A/B/R1"}
+var node1Upt = DirNode{DirName: "A/B/R1", Locked: true}
 
 func TestGenerateReleaseKey(t *testing.T) {
 	type args struct {
@@ -119,6 +120,38 @@ func TestGetRelease(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotNode, tt.wantNode) {
 				t.Errorf("GetRelease() gotNode = %v, want %v", gotNode, tt.wantNode)
+			}
+		})
+	}
+}
+
+func TestUpdateRelease(t *testing.T) {
+	type args struct {
+		repo    config2.Repo
+		release github.Release
+		newNode *DirNode
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{args: args{repo: repo1, release: release1, newNode: &node1Upt}},
+	}
+	_, _ = AddRelease(repo1, release1)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := UpdateRelease(tt.args.repo, tt.args.release, tt.args.newNode); (err != nil) != tt.wantErr {
+				t.Errorf("UpdateRelease() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			node, err := GetRelease(tt.args.repo, tt.args.release)
+			if err != nil {
+				t.Errorf("GetRelease() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(*node, node1Upt) {
+				t.Errorf("UpdateRelease() want %v, get: %v", node1Upt, *node)
+				return
 			}
 		})
 	}
