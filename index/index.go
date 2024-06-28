@@ -13,50 +13,53 @@ import (
 var indexRoot = bptree.NewTree()
 var config config2.Config
 
-func GetDir(dirName string) (err error, find bool, node *DirNode) {
-	h := fnv.New64()
-	hash, err := h.Write([]byte(dirName))
+func GetRelease(repo config2.Repo, release github.Release) (node *DirNode, err error) {
+	key, err := GenerateReleaseKey(repo, release)
 	if err != nil {
-		return fmt.Errorf("hash dirName filed: %v", err), false, nil
+		return nil, fmt.Errorf("generate release key failed: %v", err)
 	}
 
-	record, err := indexRoot.Find(hash, false)
+	record, err := indexRoot.Find(key, false)
 	if err != nil {
-		return
+		return nil, fmt.Errorf("find release key record in bptree failed: %v", err)
 	}
-	if nil == record {
-		return nil, false, nil
-	}
-
-	node = new(DirNode)
 	err = json.Unmarshal(record.Value, node)
 	if err != nil {
-		return fmt.Errorf("unmarshal bptree record value filed: %v", err), false, nil
+		return nil, fmt.Errorf("unmarshal prtree record'value to release failed")
 	}
 
-	return nil, true, node
+	return
 }
 
-//
-//func UpdateDir(dirName string, node *DirNode) (err error) {
-//	h := fnv.New64()
-//
-//	hash, err := h.Write([]byte(dirName))
-//	if err != nil {
-//		return fmt.Errorf("hash dirName filed: %v", err)
-//	}
-//
-//	record, err := indexRoot.Find(hash, false)
-//	if err != nil {
-//		return
-//	}
-//	if record == nil {
-//		return fmt.Errorf("dir node doesn't exists")
-//	}
-//}
+// AddRelease add new release to bptree
+func AddRelease(repo config2.Repo, release github.Release) (newNode *DirNode, err error) {
+	key, err := GenerateReleaseKey(repo, release)
+	if err != nil {
+		return nil, fmt.Errorf("generate release key failed: %v", err)
+	}
 
-//func MakeDir(dirName string) (err error, node *DirNode) {
-//}
+	find, err := indexRoot.Find(key, false)
+	if err != nil {
+		return nil, fmt.Errorf("find release key record in bptree failed: %v", err)
+	}
+	if find != nil {
+		return nil, fmt.Errorf("release already in the index")
+	}
+
+	newNode = new(DirNode)
+	name, _ := GenerateReleaseDirName(repo, release)
+	newNode.DirName = name
+	bytes, err := json.Marshal(newNode)
+	if err != nil {
+		return nil, fmt.Errorf("marshal release node failed: %v", err)
+	}
+	err = indexRoot.Insert(key, bytes)
+	if err != nil {
+		return nil, fmt.Errorf("insert release node to bptree failed: %v", err)
+	}
+
+	return
+}
 
 // GenerateReleaseDirName of a release
 func GenerateReleaseDirName(repo config2.Repo, release github.Release) (name string, err error) {
