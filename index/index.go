@@ -39,9 +39,6 @@ func AddRelease(repo config2.Repo, release github.Release) (newNode *DirNode, er
 	}
 
 	find, err := indexRoot.Find(key, false)
-	if err != nil {
-		return nil, fmt.Errorf("find release key record in bptree failed: %v", err)
-	}
 	if find != nil {
 		return nil, fmt.Errorf("release already in the index")
 	}

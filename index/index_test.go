@@ -3,8 +3,15 @@ package index
 import (
 	"gync/client/github"
 	config2 "gync/config"
+	"reflect"
 	"testing"
 )
+
+var repo1 = config2.Repo{Owner: "A", Name: "B"}
+var release1 = github.Release{Name: "R1", Time: "2022-06-05T12:37:28Z"}
+var repo2 = config2.Repo{Owner: "A", Name: "B"}
+var release2 = github.Release{Name: "R1", Time: "2022-06-05T12:37:29Z"}
+var node1 = DirNode{DirName: "A/B/R1"}
 
 func TestGenerateReleaseKey(t *testing.T) {
 	type args struct {
@@ -57,6 +64,33 @@ func TestGenerateReleaseDirName(t *testing.T) {
 			}
 			if gotName != tt.wantName {
 				t.Errorf("GenerateReleaseDirName() gotName = %v, want %v", gotName, tt.wantName)
+			}
+		})
+	}
+}
+
+func TestAddRelease(t *testing.T) {
+	type args struct {
+		repo    config2.Repo
+		release github.Release
+	}
+	tests := []struct {
+		name        string
+		args        args
+		wantNewNode *DirNode
+		wantErr     bool
+	}{
+		{args: args{repo: repo1, release: release1}, wantNewNode: &node1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotNewNode, err := AddRelease(tt.args.repo, tt.args.release)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("AddRelease() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotNewNode, tt.wantNewNode) {
+				t.Errorf("AddRelease() gotNewNode = %v, want %v", gotNewNode, tt.wantNewNode)
 			}
 		})
 	}
