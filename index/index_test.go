@@ -9,8 +9,6 @@ import (
 
 var repo1 = config2.Repo{Owner: "A", Name: "B"}
 var release1 = github.Release{Name: "R1", Time: "2022-06-05T12:37:28Z"}
-var repo2 = config2.Repo{Owner: "A", Name: "B"}
-var release2 = github.Release{Name: "R1", Time: "2022-06-05T12:37:29Z"}
 var node1 = DirNode{DirName: "A/B/R1"}
 var node1Upt = DirNode{DirName: "A/B/R1", Locked: true}
 
