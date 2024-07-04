@@ -1,8 +1,10 @@
 package index
 
 import (
+	"encoding/json"
 	"gync/internal/client/github"
 	config2 "gync/internal/config"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -28,7 +30,7 @@ func TestGenerateReleaseKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotKey, err := GenerateReleaseKey(tt.args.repo, tt.args.release)
+			gotKey, err := GenerateReleaseKey(&tt.args.repo, &tt.args.release)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GenerateReleaseKey() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -56,7 +58,7 @@ func TestGenerateReleaseDirName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotName, err := GenerateReleaseDirName(tt.args.repo, tt.args.release)
+			gotName, err := GenerateReleaseDirName(&tt.args.repo, &tt.args.release)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GenerateReleaseDirName() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -83,7 +85,7 @@ func TestAddRelease(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotNewNode, err := AddRelease(tt.args.repo, tt.args.release)
+			gotNewNode, err := AddRelease(&tt.args.repo, &tt.args.release)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AddRelease() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -108,10 +110,10 @@ func TestGetRelease(t *testing.T) {
 	}{
 		{args: args{repo: repo1, release: release1}, wantNode: &node1},
 	}
-	_, _ = AddRelease(repo1, release1)
+	_, _ = AddRelease(&repo1, &release1)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotNode, err := GetRelease(tt.args.repo, tt.args.release)
+			gotNode, err := GetRelease(&tt.args.repo, &tt.args.release)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetRelease() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -136,13 +138,13 @@ func TestUpdateRelease(t *testing.T) {
 	}{
 		{args: args{repo: repo1, release: release1, newNode: &node1Upt}},
 	}
-	_, _ = AddRelease(repo1, release1)
+	_, _ = AddRelease(&repo1, &release1)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := UpdateRelease(tt.args.repo, tt.args.release, tt.args.newNode); (err != nil) != tt.wantErr {
+			if err := UpdateRelease(&tt.args.repo, &tt.args.release, tt.args.newNode); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateRelease() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			node, err := GetRelease(tt.args.repo, tt.args.release)
+			node, err := GetRelease(&tt.args.repo, &tt.args.release)
 			if err != nil {
 				t.Errorf("GetRelease() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -152,5 +154,41 @@ func TestUpdateRelease(t *testing.T) {
 				return
 			}
 		})
+	}
+}
+
+func Test_bulkLoad(t *testing.T) {
+	meta, err := os.Create("/tmp/repos/A/B/R1/.meta")
+	if err != nil {
+		t.Errorf("failed to create meta file: %v", err)
+	}
+	release := github.Release{Time: "2022-06-05T12:37:28Z", Name: "R1", Assets: []github.Asset{{Name: "R1", DownloadUrl: "https://www.baidu.com"}}}
+	bytes, err := json.Marshal(&release)
+	if err != nil {
+		t.Errorf("fialed to marshal release metadata: %v", err)
+		return
+	}
+	_, err = meta.Write(bytes)
+	if err != nil {
+		t.Errorf("failed to write release metadata file: %v", err)
+		return
+	}
+
+	config := &config2.Config{RootDir: "/tmp/repos"}
+	err = InitIndex(config)
+	if err != nil {
+		t.Errorf("init index filed: %v", err)
+		return
+	}
+	repo := &config2.Repo{Owner: "A", Name: "B"}
+	node, err := GetRelease(repo, &release)
+	if err != nil {
+		t.Errorf("failed to find bulk loaded node: %v", err)
+		return
+	}
+
+	target := DirNode{"A/B/R1", false, nil}
+	if !reflect.DeepEqual(&target, node) {
+		t.Errorf("failed to find bulk loaded node")
 	}
 }
