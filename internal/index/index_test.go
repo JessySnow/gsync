@@ -158,6 +158,7 @@ func TestUpdateRelease(t *testing.T) {
 }
 
 func Test_bulkLoad(t *testing.T) {
+	_ = os.MkdirAll("/tmp/repos/A/B/R1/", os.ModePerm)
 	meta, err := os.Create("/tmp/repos/A/B/R1/.meta")
 	if err != nil {
 		t.Errorf("failed to create meta file: %v", err)
