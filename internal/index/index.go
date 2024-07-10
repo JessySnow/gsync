@@ -178,3 +178,23 @@ func bulkLoad() (err error) {
 	}
 	return
 }
+
+func findLeaf(key int) (leaf *bptree.Node, err error) {
+	i := 0
+	leaf = indexRoot.Root
+	if leaf == nil {
+		return nil, fmt.Errorf("index root is nil")
+	}
+	for !leaf.IsLeaf {
+		i = 0
+		for i < leaf.NumKeys {
+			if key >= leaf.Keys[i] {
+				i += 1
+			} else {
+				break
+			}
+		}
+		leaf, _ = leaf.Pointers[i].(*bptree.Node)
+	}
+	return leaf, nil
+}
