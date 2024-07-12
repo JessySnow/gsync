@@ -25,6 +25,10 @@ func TestKeyIterator(t *testing.T) {
 			return
 		}
 	}
+
+	if iterator.hasNext() {
+		t.Errorf("iterator hasNext check failed, except: %v, get: %v", false, true)
+	}
 }
 
 func findLeaf(node *bptree.Node, key int) (leaf *bptree.Node, err error) {
