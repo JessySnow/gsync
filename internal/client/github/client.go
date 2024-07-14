@@ -3,6 +3,7 @@ package github
 import (
 	"encoding/json"
 	"fmt"
+	"gync/internal/llog"
 	"io"
 	"net/http"
 )
@@ -12,39 +13,53 @@ const (
 	releaseUrlSuffix = "releases"
 )
 
-// ListRelease 拉取 Release 列表
-func ListRelease(owner string, repo string) (*[]Release, error) {
-	// 0. 组装 url
-	url := fmt.Sprintf("%s/%s/%s/%s", releaseUrlPrefix, owner, repo, releaseUrlSuffix)
+// Release represent a release
+type Release struct {
+	Time   string  `json:"published_at"`
+	Name   string  `json:"name"`
+	Assets []Asset `json:"assets"`
+}
 
-	// 1. 向 GitHub 发起拉取 Release 的请求
+// Asset represent a asset in release
+type Asset struct {
+	Name        string `json:"name"`
+	DownloadUrl string `json:"browser_download_url"`
+}
+
+// ListRelease fetch Release list
+func ListRelease(owner string, repo string) (*[]Release, error) {
+	// 0. concat url
+	url := fmt.Sprintf("%s/%s/%s/%s", releaseUrlPrefix, owner, repo, releaseUrlSuffix)
+	llog.Infof("list release: owner: %s, repo: %s", owner, repo)
+
+	// 1. http request
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("fetch release failed: %v", err)
 	}
 
-	// 2. 判断 HTTP 响应
+	// 2. unmarshal if request's code is StatusOk
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("http request failed with status: %s", resp.Status)
 	}
-
-	// 3.反序列化
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("read github release response failed: %v", err)
 	}
-	releases := make([]Release, 0)
+	releases := new([]Release)
 	err = json.Unmarshal(body, &releases)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal github release response failed: %v", err)
 	}
 
-	return &releases, nil
+	return releases, nil
 }
 
-// DownloadRelease 下载具体的 Release 内容
+// DownloadRelease download a release asset return http.Response struct
 func DownloadRelease(downloadUrl string) (*http.Response, error) {
 	resp, err := http.Get(downloadUrl)
+	llog.Infof("download release assrt, download url: %s", downloadUrl)
+
 	if err != nil {
 		return nil, fmt.Errorf("download release failed: %v", err)
 	}
