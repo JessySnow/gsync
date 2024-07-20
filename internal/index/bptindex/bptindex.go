@@ -1,8 +1,9 @@
-package index
+package bptindex
 
 import (
 	"encoding/json"
 	"fmt"
+	"gync/internal/index"
 	"hash/fnv"
 	"sort"
 	"time"
@@ -12,7 +13,7 @@ type BptreeReleaseDirIndexer struct {
 	indexTree *enhanceBptree
 }
 
-func (i *BptreeReleaseDirIndexer) Locate(rr *RepoRelease) (node *DirNode, err error) {
+func (i *BptreeReleaseDirIndexer) Locate(rr *index.RepoRelease) (node *index.DirNode, err error) {
 	key, err := generateKey(rr)
 	if err != nil {
 		return nil, fmt.Errorf("generate release key failed: %v", err)
@@ -22,7 +23,7 @@ func (i *BptreeReleaseDirIndexer) Locate(rr *RepoRelease) (node *DirNode, err er
 	if err != nil {
 		return nil, fmt.Errorf("find key record in bptree failed: %v", err)
 	}
-	node = new(DirNode)
+	node = new(index.DirNode)
 	err = json.Unmarshal(record.Value, node)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal prtree record'value to release failed")
@@ -31,7 +32,7 @@ func (i *BptreeReleaseDirIndexer) Locate(rr *RepoRelease) (node *DirNode, err er
 	return
 }
 
-func (i *BptreeReleaseDirIndexer) Add(rr *RepoRelease) (node *DirNode, err error) {
+func (i *BptreeReleaseDirIndexer) Add(rr *index.RepoRelease) (node *index.DirNode, err error) {
 	key, err := generateKey(rr)
 	if err != nil {
 		return nil, fmt.Errorf("generate release key failed: %v", err)
@@ -42,7 +43,7 @@ func (i *BptreeReleaseDirIndexer) Add(rr *RepoRelease) (node *DirNode, err error
 		return nil, fmt.Errorf("key already record in bptree : %v", err)
 	}
 
-	newNode := new(DirNode)
+	newNode := new(index.DirNode)
 	dirName, err := rr.GenerateReleaseDirName()
 	if err != nil {
 		return
@@ -61,7 +62,7 @@ func (i *BptreeReleaseDirIndexer) Add(rr *RepoRelease) (node *DirNode, err error
 	return newNode, nil
 }
 
-func (i *BptreeReleaseDirIndexer) Update(rr *RepoRelease, node *DirNode) (err error) {
+func (i *BptreeReleaseDirIndexer) Update(rr *index.RepoRelease, node *index.DirNode) (err error) {
 	key, err := generateKey(rr)
 	if err != nil {
 		return fmt.Errorf("generate release key failed: %v", err)
@@ -80,14 +81,14 @@ func (i *BptreeReleaseDirIndexer) Update(rr *RepoRelease, node *DirNode) (err er
 	return
 }
 
-func (i *BptreeReleaseDirIndexer) GetAbsent(rrs []RepoRelease) (absent []RepoRelease, err error) {
+func (i *BptreeReleaseDirIndexer) GetAbsent(rrs []index.RepoRelease) (absent []index.RepoRelease, err error) {
 	if 0 == len(rrs) {
 		return rrs, nil
 	}
 
 	// generate key for each RepoRelease and save all key to a slice
 	keys := make([]int, 0)
-	key2RepoRelease := make(map[int]RepoRelease)
+	key2RepoRelease := make(map[int]index.RepoRelease)
 	for _, rr := range rrs {
 		key, err := generateKey(&rr)
 		if err != nil {
@@ -111,7 +112,7 @@ func (i *BptreeReleaseDirIndexer) GetAbsent(rrs []RepoRelease) (absent []RepoRel
 	}
 
 	// traverse through keys
-	absent = *new([]RepoRelease)
+	absent = *new([]index.RepoRelease)
 	for _, key := range keys {
 		find := false
 		for iterator.hasNext() {
@@ -141,7 +142,7 @@ func New() (indexer *BptreeReleaseDirIndexer, err error) {
 	return indexer, nil
 }
 
-func generateKey(rr *RepoRelease) (key int, err error) {
+func generateKey(rr *index.RepoRelease) (key int, err error) {
 	if len(rr.RepoName) == 0 || len(rr.ReleaseTime) == 0 {
 		return -1, fmt.Errorf("enpty repo name or releaseTime: %v", rr)
 	}

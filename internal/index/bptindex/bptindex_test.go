@@ -1,18 +1,19 @@
-package index
+package bptindex
 
 import (
+	"gync/internal/index"
 	"testing"
 )
 
 var (
-	ar1 = RepoRelease{RepoOwner: "Tester", RepoName: "A", ReleaseName: "AR1", ReleaseTime: "2022-06-05T12:37:28Z"}
-	ar2 = RepoRelease{RepoOwner: "Tester", RepoName: "A", ReleaseName: "AR2", ReleaseTime: "2022-06-05T12:37:29Z"}
-	ar3 = RepoRelease{RepoOwner: "Tester", RepoName: "A", ReleaseName: "AR3", ReleaseTime: "2022-06-05T12:37:30Z"}
-	ar4 = RepoRelease{RepoOwner: "Tester", RepoName: "A", ReleaseName: "AR4", ReleaseTime: "2022-06-05T12:38:30Z"}
-	ar5 = RepoRelease{RepoOwner: "Tester", RepoName: "A", ReleaseName: "AR5", ReleaseTime: "2022-06-05T12:39:30Z"}
-	br1 = RepoRelease{RepoOwner: "Tester", RepoName: "B", ReleaseName: "BR1", ReleaseTime: "2022-06-05T12:37:28Z"}
-	br2 = RepoRelease{RepoOwner: "Tester", RepoName: "B", ReleaseName: "BR2", ReleaseTime: "2022-06-05T12:38:29Z"}
-	br3 = RepoRelease{RepoOwner: "Tester", RepoName: "B", ReleaseName: "BR3", ReleaseTime: "2022-06-05T12:39:29Z"}
+	ar1 = index.RepoRelease{RepoOwner: "Tester", RepoName: "A", ReleaseName: "AR1", ReleaseTime: "2022-06-05T12:37:28Z"}
+	ar2 = index.RepoRelease{RepoOwner: "Tester", RepoName: "A", ReleaseName: "AR2", ReleaseTime: "2022-06-05T12:37:29Z"}
+	ar3 = index.RepoRelease{RepoOwner: "Tester", RepoName: "A", ReleaseName: "AR3", ReleaseTime: "2022-06-05T12:37:30Z"}
+	ar4 = index.RepoRelease{RepoOwner: "Tester", RepoName: "A", ReleaseName: "AR4", ReleaseTime: "2022-06-05T12:38:30Z"}
+	ar5 = index.RepoRelease{RepoOwner: "Tester", RepoName: "A", ReleaseName: "AR5", ReleaseTime: "2022-06-05T12:39:30Z"}
+	br1 = index.RepoRelease{RepoOwner: "Tester", RepoName: "B", ReleaseName: "BR1", ReleaseTime: "2022-06-05T12:37:28Z"}
+	br2 = index.RepoRelease{RepoOwner: "Tester", RepoName: "B", ReleaseName: "BR2", ReleaseTime: "2022-06-05T12:38:29Z"}
+	br3 = index.RepoRelease{RepoOwner: "Tester", RepoName: "B", ReleaseName: "BR3", ReleaseTime: "2022-06-05T12:39:29Z"}
 )
 
 func TestBptreeReleaseDirIndexer_Add(t *testing.T) {
@@ -42,7 +43,7 @@ func TestBptreeReleaseDirIndexer_GetAbsent(t *testing.T) {
 	}
 
 	// check in empty state
-	absent, err := indexer.GetAbsent([]RepoRelease{ar1, ar2, br1, br2})
+	absent, err := indexer.GetAbsent([]index.RepoRelease{ar1, ar2, br1, br2})
 	if err != nil {
 		t.Errorf("failed to get absent: %v", err)
 		return
@@ -57,7 +58,7 @@ func TestBptreeReleaseDirIndexer_GetAbsent(t *testing.T) {
 	_, _ = indexer.Add(&br1)
 	_, _ = indexer.Add(&br2)
 	_, _ = indexer.Add(&br3)
-	absent, err = indexer.GetAbsent([]RepoRelease{ar1, ar2, ar3, ar4, ar5, br1, br2, br3})
+	absent, err = indexer.GetAbsent([]index.RepoRelease{ar1, ar2, ar3, ar4, ar5, br1, br2, br3})
 	if err != nil {
 		t.Errorf("failed to get absent: %v", err)
 		return
@@ -67,13 +68,13 @@ func TestBptreeReleaseDirIndexer_GetAbsent(t *testing.T) {
 		return
 	}
 
-	absentSet := make(map[RepoRelease]int)
+	absentSet := make(map[index.RepoRelease]int)
 	for _, abs := range absent {
 		absentSet[abs] = 1
 	}
 
 	if absentSet[ar2] == 0 || absentSet[ar5] == 0 || absentSet[ar4] == 0 {
-		t.Errorf("mismatch on except absent release and got absent release: %v, %v", []RepoRelease{ar2, br1, br2}, absentSet)
+		t.Errorf("mismatch on except absent release and got absent release: %v, %v", []index.RepoRelease{ar2, br1, br2}, absentSet)
 	}
 }
 
@@ -90,7 +91,7 @@ func TestBptreeReleaseDirIndexer_Locate(t *testing.T) {
 	_, _ = indexer.Add(&br2)
 	_, _ = indexer.Add(&br3)
 
-	rrs := []RepoRelease{ar1, ar3, br1, br2, br3}
+	rrs := []index.RepoRelease{ar1, ar3, br1, br2, br3}
 	for _, rr := range rrs {
 		node, err := indexer.Locate(&rr)
 		if err != nil {
@@ -134,7 +135,7 @@ func TestBptreeReleaseDirIndexer_Update(t *testing.T) {
 
 func Test_generateKey(t *testing.T) {
 	type args struct {
-		rr *RepoRelease
+		rr *index.RepoRelease
 	}
 	tests := []struct {
 		name    string
