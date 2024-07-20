@@ -30,5 +30,5 @@ type ReleaseDirIndex interface {
 	Locate(rr *RepoRelease) (node *DirNode, err error)
 	Add(rr *RepoRelease) (node *DirNode, err error)
 	Update(rr *RepoRelease, node *DirNode) (err error)
-	GetAbsent(rrs *[]RepoRelease) (absent *[]RepoRelease, err error)
+	GetAbsent(rrs []RepoRelease) (absent []RepoRelease, err error)
 }
