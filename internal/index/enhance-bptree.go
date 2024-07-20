@@ -23,8 +23,10 @@ type enhanceBptreeLeafNode struct {
 }
 
 type leafNodeKeyIterator struct {
-	index int
-	node  *enhanceBptreeLeafNode
+	index         int
+	node          *enhanceBptreeLeafNode
+	snapshotIndex int
+	snapshotNode  *enhanceBptreeLeafNode
 }
 
 func newEnhanceBptree() *enhanceBptree {
@@ -59,7 +61,7 @@ func (e *enhanceBptreeLeafNode) newIterator() (iterator *leafNodeKeyIterator, er
 		return nil, fmt.Errorf("not a leaf node")
 	}
 
-	return &leafNodeKeyIterator{0, e}, nil
+	return &leafNodeKeyIterator{0, e, 0, e}, nil
 }
 
 func (it *leafNodeKeyIterator) hasNext() bool {
@@ -88,4 +90,14 @@ func (it *leafNodeKeyIterator) getNext() (key int, err error) {
 	} else {
 		return key, noMoreElement
 	}
+}
+
+func (it *leafNodeKeyIterator) snapshot() {
+	it.snapshotIndex = it.index
+	it.snapshotNode = it.node
+}
+
+func (it *leafNodeKeyIterator) reset() {
+	it.node = it.snapshotNode
+	it.index = it.snapshotIndex
 }

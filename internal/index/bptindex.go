@@ -3,7 +3,6 @@ package index
 import (
 	"encoding/json"
 	"fmt"
-	config2 "gync/internal/config"
 	"hash/fnv"
 	"sort"
 	"time"
@@ -11,7 +10,6 @@ import (
 
 type BptreeReleaseDirIndexer struct {
 	indexTree *enhanceBptree
-	context   config2.Repo
 }
 
 func (i *BptreeReleaseDirIndexer) Locate(rr *RepoRelease) (node *DirNode, err error) {
@@ -60,7 +58,7 @@ func (i *BptreeReleaseDirIndexer) Add(rr *RepoRelease) (node *DirNode, err error
 		return nil, fmt.Errorf("insert dir node to bptree failed: %v", err)
 	}
 
-	return
+	return newNode, nil
 }
 
 func (i *BptreeReleaseDirIndexer) Update(rr *RepoRelease, node *DirNode) (err error) {
@@ -118,33 +116,37 @@ func (i *BptreeReleaseDirIndexer) GetAbsent(rrs []RepoRelease) (absent []RepoRel
 		find := false
 		for iterator.hasNext() {
 			current, _ := iterator.getNext()
-			if key == current {
+			if current == key {
 				find = true
 				break
 			}
-			if key > current {
+			if current > key {
 				break
 			}
 		}
 
 		if !find {
+			iterator.reset()
 			absent = append(absent, key2RepoRelease[key])
+		} else {
+			iterator.snapshot()
 		}
 	}
 
 	return absent, nil
 }
 
+func New() (indexer *BptreeReleaseDirIndexer, err error) {
+	indexer = &BptreeReleaseDirIndexer{indexTree: newEnhanceBptree()}
+	return indexer, nil
+}
+
 func generateKey(rr *RepoRelease) (key int, err error) {
-	if len(rr.ReleaseTime) == 0 {
-		return -1, fmt.Errorf("empty release time")
+	if len(rr.RepoName) == 0 || len(rr.ReleaseTime) == 0 {
+		return -1, fmt.Errorf("enpty repo name or releaseTime: %v", rr)
 	}
 	h := fnv.New32()
-	dirName, err := rr.GenerateReleaseDirName()
-	if err != nil {
-		return
-	}
-	_, _ = h.Write([]byte(dirName))
+	_, _ = h.Write([]byte(rr.RepoName))
 	key = int(h.Sum32())
 
 	t, err := time.Parse(time.RFC3339, rr.ReleaseTime)
