@@ -23,6 +23,8 @@ func init() {
 func main() {
 	gsync := figure.NewFigure("GSYNC", "", true)
 	gsync.Print()
+	err := dispatchOnce(context, indexer)
+	llog.Errorf("%v", err)
 }
 
 // initConfig read config file and parse it to global config -- context
