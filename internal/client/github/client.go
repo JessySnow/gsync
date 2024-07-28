@@ -27,7 +27,7 @@ type Asset struct {
 }
 
 // ListRelease fetch Release list
-func ListRelease(owner string, repo string) (*[]Release, error) {
+func ListRelease(owner string, repo string) ([]Release, error) {
 	// 0. concat url
 	url := fmt.Sprintf("%s/%s/%s/%s", releaseUrlPrefix, owner, repo, releaseUrlSuffix)
 	llog.Infof("list release: owner: %s, repo: %s", owner, repo)
@@ -52,7 +52,7 @@ func ListRelease(owner string, repo string) (*[]Release, error) {
 		return nil, fmt.Errorf("unmarshal github release response failed: %v", err)
 	}
 
-	return releases, nil
+	return *releases, nil
 }
 
 // DownloadRelease download a release asset return http.Response struct
