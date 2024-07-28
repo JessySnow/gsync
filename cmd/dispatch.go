@@ -12,6 +12,7 @@ import (
 )
 
 // TODO update indexer
+// FIXME missing metadata
 // dispatchOnce scan missing release and download missing release, meantime update indexer
 func dispatchOnce(context *config.Config, indexer *bptindex.BptreeReleaseDirIndexer) error {
 	repos := context.Repos
