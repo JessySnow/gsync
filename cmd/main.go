@@ -91,7 +91,6 @@ func doInitIndexer(rootDir string, currentDir string, dirDepth int) {
 		repoName := parts[1]
 		releaseName := parts[2]
 		releaseTime := string(metadata)
-		llog.Debugln(repoOwner, repoName, releaseName, releaseTime)
 		rr := index.RepoRelease{RepoOwner: repoOwner, RepoName: repoName, ReleaseName: releaseName, ReleaseTime: releaseTime}
 		llog.Debugf("adding repo release to indexer: %v", rr)
 		_, err = indexer.Add(&rr)
