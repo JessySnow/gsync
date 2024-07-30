@@ -23,7 +23,7 @@ func init() {
 func main() {
 	gsync := figure.NewFigure("GSYNC", "", true)
 	gsync.Print()
-	_ = dispatchOnce(context, indexer)
+	dispatch(context, indexer)
 }
 
 // initConfig read config file and parse it to global config -- context

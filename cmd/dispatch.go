@@ -9,7 +9,20 @@ import (
 	"gync/internal/llog"
 	"io"
 	"path/filepath"
+	"time"
 )
+
+// dispatch schedule run dispatchOnce and handle error
+func dispatch(context *config.Config, indexer *bptindex.BptreeReleaseDirIndexer) {
+	for {
+		err := dispatchOnce(context, indexer)
+		if err != nil {
+			llog.Errorf("dispatch failed try dispatch again after %v minutes: %v", context.SyncInterval, err)
+		}
+
+		time.Sleep(time.Duration(context.SyncInterval) * time.Minute)
+	}
+}
 
 // dispatchOnce scan missing release and download missing release, meantime update indexer
 func dispatchOnce(context *config.Config, indexer *bptindex.BptreeReleaseDirIndexer) error {
