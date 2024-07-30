@@ -54,7 +54,7 @@ func dispatchOnce(context *config.Config, indexer *bptindex.BptreeReleaseDirInde
 		}
 		if 0 == len(absents) {
 			llog.Infof("all release are downloaded")
-			return nil
+			continue
 		}
 
 		// download absent release
