@@ -17,6 +17,7 @@ const (
 type Release struct {
 	Time   string  `json:"published_at"`
 	Name   string  `json:"name"`
+	TagNme string  `json:"tag_name"`
 	Assets []Asset `json:"assets"`
 }
 

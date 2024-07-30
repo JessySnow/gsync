@@ -43,6 +43,9 @@ func dispatchOnce(context *config.Config, indexer *bptindex.BptreeReleaseDirInde
 		rr2Release := make(map[index.RepoRelease]github.Release)
 		rrs := make([]index.RepoRelease, 0)
 		for _, r := range allReleases {
+			if 0 == len(r.Name) {
+				r.Name = r.TagNme
+			}
 			rr := index.RepoRelease{RepoOwner: repo.Owner, RepoName: repo.Name, ReleaseTime: r.Time, ReleaseName: r.Name}
 			rr2Release[rr] = r
 			rrs = append(rrs, rr)
