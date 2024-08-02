@@ -117,6 +117,7 @@ func dispatchOnce(context *config.Config, indexer *bptindex.BptreeReleaseDirInde
 			}
 		}
 
+		time.Sleep(time.Duration(context.SyncGap) * time.Minute)
 	}
 
 	return nil
