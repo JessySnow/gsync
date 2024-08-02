@@ -18,9 +18,10 @@ func MkdirIfAbsent(dir string) error {
 		if err != nil {
 			return err
 		}
+	} else {
+		llog.Infof("dir %s already exists", dir)
 	}
 
-	llog.Infof("dir %s already exists", dir)
 	return nil
 }
 
@@ -36,8 +37,9 @@ func CreateFileIfAbsent(file string) (f *os.File, err error) {
 			return nil, err
 		}
 		return f, nil
+	} else {
+		llog.Infof("file %s already exists", file)
 	}
 
-	llog.Infof("file %s already exists", file)
 	return os.Open(file)
 }
