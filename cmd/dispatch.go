@@ -75,7 +75,7 @@ func dispatchOnce(context *config.Config, indexer *bptindex.BptreeReleaseDirInde
 			for _, asset := range release.Assets {
 				downloadedAsset, err := github.DownloadRelease(asset.DownloadUrl)
 				if err != nil {
-					llog.Errorf("failed to download repo{%v} downloadedAsset{%v}: %v", repo, downloadedAsset)
+					llog.Errorf("failed to download repo{%v} downloadedAsset{%v}: %v", repo, downloadedAsset, err)
 					return err
 				}
 
