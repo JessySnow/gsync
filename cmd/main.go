@@ -95,7 +95,7 @@ func doInitIndexer(rootDir string, currentDir string, dirDepth int) {
 		llog.Debugf("adding repo release to indexer: %v", rr)
 		_, err = indexer.Add(&rr)
 		if err != nil {
-			llog.Fatalf("can't add repo release: %v", err)
+			llog.Errorf("can't add repo release: %v will dispatch that release later", err)
 		}
 		return
 	}
