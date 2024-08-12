@@ -21,8 +21,8 @@ func init() {
 }
 
 func main() {
-	gsync := figure.NewFigure("GSYNC", "", true)
-	gsync.Print()
+	icon := figure.NewFigure("GSYNC", "", true)
+	icon.Print()
 	dispatch(context, indexer)
 }
 
